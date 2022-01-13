@@ -1,9 +1,11 @@
 <script>
     import { onMount } from "svelte";
+    import * as callback from "./shared_utils/notebook_callback";
 
     export let img_url;
     export let size = 256;
     export let highlightRadius = 15;
+    export let callback_name;
 
     let canvas;
     let ctx;
@@ -22,6 +24,9 @@
 
     function mouseUp() {
         drawing = false;
+        if(callback_name) {
+            callback.execute(callback_name, canvas.toDataURL());
+        }
     }
 
     function handleMove(e) {
