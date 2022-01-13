@@ -8,17 +8,32 @@
     let canvas;
     let ctx;
 
+    let drawing = false;
+
     onMount(() => {
         canvas.width = size;
         canvas.height = size;
         ctx = canvas.getContext('2d');
     });
 
+    function mouseDown() {
+        drawing = true;
+    }
+
+    function mouseUp() {
+        drawing = false;
+    }
+
     function handleMove(e) {
+        if(!drawing) return;
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.arc(e.offsetX, e.offsetY, highlightRadius, 0, 2 * Math.PI);
         ctx.fill();
+    }
+
+    function reset() {
+        ctx.clearRect(0, 0, size, size);
     }
 </script>
 
@@ -28,10 +43,15 @@
     <canvas 
         bind:this={canvas}
         on:mousemove={handleMove} 
+        on:mousedown={mouseDown}
+        on:mouseup={mouseUp}
         class="overlay" 
         style="z-index: 10; width: {size}px; height: {size}px;"
     ></canvas>
 </div>
+
+<br>
+<button on:click={reset}>Reset</button>
 
 <style>
     .container {
