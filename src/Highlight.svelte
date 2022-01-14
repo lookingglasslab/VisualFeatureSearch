@@ -58,6 +58,14 @@
 <br>
 <button on:click={reset}>Reset</button>
 
+{#if !callback.is_supported()}
+    <p style="border: 1px solid red;">
+        Warning: this environment does not support callbacks between JavaScript and Python,
+        and this widget will not work as a result. Consider using Google Colab or a native
+        Jupyter Notebook setup instead.
+    </p>
+{/if}
+
 <style>
     .container {
         position: relative;
