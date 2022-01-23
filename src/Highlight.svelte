@@ -39,6 +39,9 @@
 
     function reset() {
         ctx.clearRect(0, 0, size, size);
+        if(callback_name) {
+            callback.execute(callback_name, canvas.toDataURL());
+        }
     }
 </script>
 
