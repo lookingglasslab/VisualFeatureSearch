@@ -44,3 +44,12 @@ class SearchSpaceDataset(Dataset):
         if self.transform:
             image = self.transform(image)
         return image, idx
+    
+    # get the image at index idx as a PIL object
+    def get_vis_image(self, idx):
+        img_path = os.path.join(self._path, self._all_images[idx])
+        image = Image.open(img_path)
+
+        # use visual transform
+        image = vis_transform(image)
+        return image
