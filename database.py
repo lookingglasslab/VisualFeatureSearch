@@ -26,7 +26,7 @@ vis_transform = transforms.Compose([
 class SearchSpaceDataset(Dataset):
     def __init__(self, path, transform=net_transform):
         self._path = path
-        self._all_images = os.listdir(path)
+        self._all_images = sorted(os.listdir(path))
         self.transform = net_transform
     
     def __len__(self):
