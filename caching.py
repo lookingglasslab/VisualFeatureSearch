@@ -48,6 +48,7 @@ def precompute(dataset_path, cache_path):
             features = features.cpu().numpy()
             idxs = idxs.numpy()
             out_feats[idxs[0]:idxs[0]+BATCH_SIZE] = features
+            print('Progress:', idxs[0], '/', len(search_db))
 
 def load_data(cache_path):
     store = zarr.DirectoryStore(cache_path)
