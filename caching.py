@@ -1,13 +1,18 @@
-from __future__ import annotations
-from enum import Enum
-
 import os
-import pickle
+from enum import Enum
+import argparse
 
 import numpy as np
 
-# keep it located within the VisualSearch repo
-CACHE_DIR = os.path.dirname(__file__) + '/SavedFeatures' if __file__ else './SavedFeatures'
+import torch
+from torch.utils.data import DataLoader
+import torchvision
+from torchvision import models, transforms
+
+import database
+import zarr
+
+BATCH_SIZE = 256
 
 class FeatureType(Enum):
     '''Enum of all features we work with in this project. 
@@ -16,37 +21,45 @@ class FeatureType(Enum):
     HOG = 1
     CNN = 2
 
-class SavedFeature:
-    '''Class used to save and load precomputed image features'''
-    def __init__(self, path: str, pos: tuple[int, int], 
-            size: tuple[int, int], data: np.ndarray, type: FeatureType = None):
-        self.path = path
-        self.pos = pos # x,y coordinates in the image
-        self.size = size # width, height coordinates
-        self.data = data
-        self.datatype = type
+def precompute(dataset_path, cache_path):
+    if not torch.cuda.is_available():
+        raise Exception('No GPU Available')
 
-    def __repr__(self):
-        return 'SavedFeature(path=' + self.path + ', shape=' + str(self.data.shape) + ')'
+    gpu = torch.device('cuda:0')
 
-def save_all(features: list[SavedFeature], filename: str):
-    '''Save all given features to a file in "`CACHE_DIR`/`filename`".
-    Uses pickle for serializing and saving.'''
-    if not os.path.exists(CACHE_DIR):
-        os.mkdir(CACHE_DIR)
+    feature_model = models.vgg16(pretrained=True)
+    feature_model = feature_model.features
+    feature_model = feature_model.to(gpu)
 
-    path = os.path.join(CACHE_DIR, filename)
-    
-    with open(path, 'wb') as f:
-        pickle.dump(features, f)
+    search_db = database.SearchSpaceDataset(dataset_path)
+    dl = DataLoader(search_db, batch_size=BATCH_SIZE)
 
-def load_from_file(filename: str, assemble_numpy=False):
-    path = os.path.join(CACHE_DIR, filename)
-    with open(path, 'rb') as f:
-        featurelist: list[SavedFeature] = pickle.load(f)
-    
-    if assemble_numpy:
-        all_vecs = [feat.data for feat in featurelist]
-        return featurelist, np.stack(all_vecs)
-    
-    return featurelist
+    store = zarr.DirectoryStore(cache_path)
+    root = zarr.group(store=store, overwrite=True)
+    out_feats = root.zeros(FeatureType.CNN,
+            shape=(len(search_db), 512, 7, 7),
+            chunks=(500, None, None, None))
+
+    with torch.no_grad():
+        it = iter(dl)
+        for batch, idxs in it:
+            batch = batch.to(gpu)
+            features = feature_model(batch)
+            features = features.cpu().numpy()
+            idxs = idxs.numpy()
+            out_feats[idxs[0]:idxs[0]+BATCH_SIZE] = features
+
+def load_data(cache_path):
+    store = zarr.DirectoryStore(cache_path)
+    root = zarr.group(store=store, overwrite=False)
+    return root[FeatureType.CNN]
+
+def get_args():
+    parser = argparse.ArgumentParser(description='Precompute the features for a given dataset')
+    parser.add_argument('dataset_path', type=str, help='Path to input image dataset')
+    parser.add_argument('cache_path', type=str, help='Path to store the resulting ZARR datastore')
+    return parser.parse_args()
+
+if __name__ == '__main__':
+    args = get_args()
+    precompute(args.dataset_path, args.cache_path)
