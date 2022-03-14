@@ -18,10 +18,10 @@ class SearchTool:
         self._model = model.to(device)
         self._device = device
 
-    def set_input_image(self, query_image):
+    def set_input_image(self, query_image: torch.Tensor):
         '''Assumes `query_image` is already preprocessed'''
         query_image = query_image.to(self._device)
-        self._query_features = self._model(query_image)
+        self._query_features = self._model(query_image[None, :, :, :])
 
     def compute(self, query_mask):
         raise NotImplementedError('Do not use the SearchTool base class')
