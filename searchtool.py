@@ -65,8 +65,10 @@ class SearchTool:
                 batch_xs[sims > batch_sims] = x
                 batch_ys[sims > batch_sims] = y
                 batch_sims = torch.maximum(sims, batch_sims)
+
+                del region_vecs, sims
         
-        return batch_sims, batch_xs, batch_ys
+        return batch_sims.cpu(), batch_xs.cpu(), batch_ys.cpu()
 
 class LiveSearchTool(SearchTool):
     def __init__(self, model, device, dataset: Dataset, batch_size=64):
@@ -83,11 +85,13 @@ class LiveSearchTool(SearchTool):
             for batch in it:
                 batch = batch.to(self._device)
                 all_vecs.append(self._model(batch))
-        return torch.cat(all_vecs)
+        return torch.cat(all_vecs).cpu()
     
     def compute(self, query_mask):
         return self.compute_batch(query_mask, self._all_vecs)
 
+# idea: make a live batched version, where feature vecs are stored in Zarr but computed on the fly
+# or: switch between RAM and GPU memory for batches
 
 class CachedSearchTool(SearchTool):
     def __init__(self, model, dataset: Dataset, device):
