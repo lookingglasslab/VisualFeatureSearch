@@ -74,7 +74,6 @@ class SearchTool:
                                      width - q_width + 1)
         batch_mags = torch.sum(batch_mags, 1, keepdim=True)
         batch_mags = torch.sqrt(batch_mags)
-        print(batch_mags.shape)
 
         window_sims = scaledSims / batch_mags
         window_sims = window_sims.view(window_sims.shape[0], -1)
