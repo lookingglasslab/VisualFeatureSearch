@@ -2,6 +2,7 @@ from __future__ import annotations
 import numpy as np
 
 import torch
+from torch.nn import Conv2d
 from torch.utils.data import DataLoader, Dataset
 
 def get_crop_rect(query_mask: np.ndarray, threshold=0) -> tuple[int]:
@@ -54,20 +55,34 @@ class SearchTool:
         batch_xs = torch.zeros(len(batch_vecs)).to(self._device)
         batch_ys = torch.zeros(len(batch_vecs)).to(self._device)
 
-        # do sliding window
-        for y in range(height - q_height + 1):
-            for x in range(width - q_width + 1):
-                region_vecs = batch_vecs[..., y:y+q_height, x:x+q_width]
-                region_vecs = region_vecs * mask_tensor
-                norm_batch = region_vecs / torch.linalg.vector_norm(region_vecs, dim=[1, 2, 3], keepdim=True)
+        # CONVOLUTION IDEAS
+        # goal is to find cos(theta) = A . B / (||A|| * ||B||)
+        # - first do convolution between batch_vecs (tensor) and norm_query_features*mask_tensor (kernel)
+        # - batch_vecs is not normalized, so we need to find vector mag. for each window we used
+        #   - this can (maybe?) be done by first doing batch_vecs * batch_vecs (element-wise)
+        #   - then, we can do a second convolution between squared vecs and the mask tensor to get squared magnitude
+        #   - then just divide convolution outputs element-wise
 
-                sims = torch.sum(norm_batch * norm_query_features, [1, 2, 3])
-                batch_xs[sims > batch_sims] = x
-                batch_ys[sims > batch_sims] = y
-                batch_sims = torch.maximum(sims, batch_sims)
+        scaledSims = torch.conv2d(batch_vecs.double(), norm_query_features * mask_tensor)
 
-                del region_vecs, sims
-        
+        sq_batch_vecs = batch_vecs * batch_vecs
+        sq_mask_tensor = mask_tensor * mask_tensor
+        batch_mags = torch.conv2d(sq_batch_vecs.double().view(-1, 1, height, width), sq_mask_tensor)
+        batch_mags = batch_mags.view(batch_vecs.shape[0], 
+                                     batch_vecs.shape[1],
+                                     height - q_height + 1,
+                                     width - q_width + 1)
+        batch_mags = torch.sum(batch_mags, 1, keepdim=True)
+        batch_mags = torch.sqrt(batch_mags)
+        print(batch_mags.shape)
+
+        window_sims = scaledSims / batch_mags
+        window_sims = window_sims.view(window_sims.shape[0], -1)
+
+        batch_sims, idxs = window_sims.max(dim=1)
+        batch_xs = idxs % (width - q_width + 1)
+        batch_ys = torch.div(idxs, height - q_height + 1, rounding_mode='floor')
+
         return batch_sims.cpu(), batch_xs.cpu(), batch_ys.cpu()
 
 class LiveSearchTool(SearchTool):
