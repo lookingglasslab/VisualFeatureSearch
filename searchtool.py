@@ -84,11 +84,20 @@ class LiveSearchTool(SearchTool):
             all_vecs = []
             for batch in it:
                 batch = batch.to(self._device)
-                all_vecs.append(self._model(batch))
-        return torch.cat(all_vecs).cpu()
+                all_vecs.append(self._model(batch).cpu())
+                del batch
+        return all_vecs
     
     def compute(self, query_mask):
-        return self.compute_batch(query_mask, self._all_vecs)
+        sims = []
+        xs = []
+        ys = []
+        for batch in self._all_vecs:
+            batch_sims, batch_xs, batch_ys = self.compute_batch(query_mask, batch)
+            sims.append(batch_sims)
+            xs.append(batch_xs)
+            ys.append(batch_ys)
+        return torch.cat(sims), torch.cat(xs), torch.cat(ys)
 
 # idea: make a live batched version, where feature vecs are stored in Zarr but computed on the fly
 # or: switch between RAM and GPU memory for batches
