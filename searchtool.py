@@ -80,7 +80,7 @@ class SearchTool:
 
         batch_sims, idxs = window_sims.max(dim=1)
         batch_xs = idxs % (width - q_width + 1)
-        batch_ys = torch.div(idxs, height - q_height + 1, rounding_mode='floor')
+        batch_ys = torch.div(idxs, width - q_width + 1, rounding_mode='floor')
 
         return batch_sims.cpu(), batch_xs.cpu(), batch_ys.cpu()
 
