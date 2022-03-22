@@ -1,8 +1,8 @@
 from __future__ import annotations
 import numpy as np
+import zarr
 
 import torch
-from torch.nn import Conv2d
 from torch.utils.data import DataLoader, Dataset
 
 def get_crop_rect(query_mask: np.ndarray, threshold=0) -> tuple[int]:
@@ -117,5 +117,19 @@ class LiveSearchTool(SearchTool):
 # or: switch between RAM and GPU memory for batches
 
 class CachedSearchTool(SearchTool):
-    def __init__(self, model, dataset: Dataset, device):
-        super().__init__(model, dataset, device)
+    def __init__(self, model, cache: zarr.Array, device, batch_size=500):
+        super().__init__(model, device)
+        self._cache = cache
+        self._batch_size = batch_size
+
+    def compute(self, query_mask):
+        sims = []
+        xs = []
+        ys = []
+        for i in range(0, len(self._cache), self._batch_size):
+            batch_arr = self._cache[i:i + self._batch_size]
+            batch_sims, batch_xs, batch_ys = self.compute_batch(query_mask, batch_arr)
+            sims.append(batch_sims)
+            xs.append(batch_xs)
+            ys.append(batch_ys)
+        return torch.cat(sims), torch.cat(xs), torch.cat(ys)
