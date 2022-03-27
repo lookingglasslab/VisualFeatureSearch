@@ -1,5 +1,6 @@
 from __future__ import annotations
 import numpy as np
+import zarr
 
 import torch
 from torch.utils.data import DataLoader, Dataset
@@ -54,20 +55,33 @@ class SearchTool:
         batch_xs = torch.zeros(len(batch_vecs)).to(self._device)
         batch_ys = torch.zeros(len(batch_vecs)).to(self._device)
 
-        # do sliding window
-        for y in range(height - q_height + 1):
-            for x in range(width - q_width + 1):
-                region_vecs = batch_vecs[..., y:y+q_height, x:x+q_width]
-                region_vecs = region_vecs * mask_tensor
-                norm_batch = region_vecs / torch.linalg.vector_norm(region_vecs, dim=[1, 2, 3], keepdim=True)
+        # CONVOLUTION IDEAS
+        # goal is to find cos(theta) = A . B / (||A|| * ||B||)
+        # - first do convolution between batch_vecs (tensor) and norm_query_features*mask_tensor (kernel)
+        # - batch_vecs is not normalized, so we need to find vector mag. for each window we used
+        #   - this can (maybe?) be done by first doing batch_vecs * batch_vecs (element-wise)
+        #   - then, we can do a second convolution between squared vecs and the mask tensor to get squared magnitude
+        #   - then just divide convolution outputs element-wise
 
-                sims = torch.sum(norm_batch * norm_query_features, [1, 2, 3])
-                batch_xs[sims > batch_sims] = x
-                batch_ys[sims > batch_sims] = y
-                batch_sims = torch.maximum(sims, batch_sims)
+        scaledSims = torch.conv2d(batch_vecs.double(), norm_query_features * mask_tensor)
 
-                del region_vecs, sims
-        
+        sq_batch_vecs = batch_vecs * batch_vecs
+        sq_mask_tensor = mask_tensor * mask_tensor
+        batch_mags = torch.conv2d(sq_batch_vecs.double().view(-1, 1, height, width), sq_mask_tensor)
+        batch_mags = batch_mags.view(batch_vecs.shape[0], 
+                                     batch_vecs.shape[1],
+                                     height - q_height + 1,
+                                     width - q_width + 1)
+        batch_mags = torch.sum(batch_mags, 1, keepdim=True)
+        batch_mags = torch.sqrt(batch_mags)
+
+        window_sims = scaledSims / batch_mags
+        window_sims = window_sims.view(window_sims.shape[0], -1)
+
+        batch_sims, idxs = window_sims.max(dim=1)
+        batch_xs = idxs % (width - q_width + 1)
+        batch_ys = torch.div(idxs, width - q_width + 1, rounding_mode='floor')
+
         return batch_sims.cpu(), batch_xs.cpu(), batch_ys.cpu()
 
 class LiveSearchTool(SearchTool):
@@ -84,15 +98,38 @@ class LiveSearchTool(SearchTool):
             all_vecs = []
             for batch in it:
                 batch = batch.to(self._device)
-                all_vecs.append(self._model(batch))
-        return torch.cat(all_vecs).cpu()
+                all_vecs.append(self._model(batch).cpu())
+                del batch
+        return all_vecs
     
     def compute(self, query_mask):
-        return self.compute_batch(query_mask, self._all_vecs)
+        sims = []
+        xs = []
+        ys = []
+        for batch in self._all_vecs:
+            batch_sims, batch_xs, batch_ys = self.compute_batch(query_mask, batch)
+            sims.append(batch_sims)
+            xs.append(batch_xs)
+            ys.append(batch_ys)
+        return torch.cat(sims), torch.cat(xs), torch.cat(ys)
 
 # idea: make a live batched version, where feature vecs are stored in Zarr but computed on the fly
 # or: switch between RAM and GPU memory for batches
 
 class CachedSearchTool(SearchTool):
-    def __init__(self, model, dataset: Dataset, device):
-        super().__init__(model, dataset, device)
+    def __init__(self, model, cache: zarr.Array, device, batch_size=500):
+        super().__init__(model, device)
+        self._cache = cache
+        self._batch_size = batch_size
+
+    def compute(self, query_mask):
+        sims = []
+        xs = []
+        ys = []
+        for i in range(0, len(self._cache), self._batch_size):
+            batch_arr = self._cache[i:i + self._batch_size]
+            batch_sims, batch_xs, batch_ys = self.compute_batch(query_mask, batch_arr)
+            sims.append(batch_sims)
+            xs.append(batch_xs)
+            ys.append(batch_ys)
+        return torch.cat(sims), torch.cat(xs), torch.cat(ys)
