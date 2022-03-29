@@ -29,7 +29,7 @@
     function mouseUp() {
         drawing = false;
         if(callback_name) {
-            callback.execute(callback_name, [canvas.toDataURL(), index]);
+            callback.execute(callback_name, [canvas.toDataURL(), selected]);
         }
     }
 
@@ -44,7 +44,7 @@
     function reset() {
         ctx.clearRect(0, 0, size, size);
         if(callback_name) {
-            callback.execute(callback_name, [canvas.toDataURL(), index]);
+            callback.execute(callback_name, [canvas.toDataURL(), selected]);
         }
     }
 
