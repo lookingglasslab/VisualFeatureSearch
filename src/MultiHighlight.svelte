@@ -3,8 +3,8 @@
     import * as callback from "./shared_utils/notebook_callback";
 
     export let all_urls;
-    export let size = 256;
-    export let highlightRadius = 15;
+    export let size = 224;
+    export let highlightRadius = 20;
     export let callback_name;
 
     let canvas;
@@ -14,8 +14,6 @@
 
     let selected = 0;
     let curr_url;
-
-    let text = "fdsa";
 
     onMount(() => {
         canvas.width = size;
@@ -31,7 +29,7 @@
     function mouseUp() {
         drawing = false;
         if(callback_name) {
-            callback.execute(callback_name, canvas.toDataURL());
+            callback.execute(callback_name, [canvas.toDataURL(), index]);
         }
     }
 
@@ -46,7 +44,7 @@
     function reset() {
         ctx.clearRect(0, 0, size, size);
         if(callback_name) {
-            callback.execute(callback_name, canvas.toDataURL());
+            callback.execute(callback_name, [canvas.toDataURL(), index]);
         }
     }
 
@@ -60,8 +58,6 @@
         }
     }
 </script>
-
-<p>{text}</p>
 
 <div class="photos" style="width: {size}px">
     {#each all_urls as url, idx}
