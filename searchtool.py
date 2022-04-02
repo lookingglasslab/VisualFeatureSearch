@@ -73,7 +73,7 @@ class SearchTool:
                                      height - q_height + 1,
                                      width - q_width + 1)
         batch_mags = torch.sum(batch_mags, 1, keepdim=True)
-        batch_mags = torch.sqrt(batch_mags)
+        batch_mags = torch.sqrt(batch_mags) + 1e-5 # add small eps to avoid NaN values
 
         window_sims = scaledSims / batch_mags
         window_sims = window_sims.view(window_sims.shape[0], -1)
