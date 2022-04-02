@@ -5,7 +5,7 @@ import torch
 import zarr
 
 def hog_model(img: torch.TensorType):
-    input = img[0].cpu().numpy()
+    input = img.cpu().numpy()
     features = skhog(input,
                      visualize=False, 
                      feature_vector=False, 
