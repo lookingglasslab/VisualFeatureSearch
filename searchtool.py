@@ -32,6 +32,7 @@ class SearchTool:
         cropped_mask = query_mask[top:bot, left:right]
         cropped_query_features = self._query_features[..., top:bot, left:right]
 
+        # TODO: doing this once per batch is a bottleneck -- switch to doing it once
         mask_tensor = torch.tensor(cropped_mask).to(self._device)
         mask_tensor = mask_tensor[None, None, :, :] # reshape to match feature tensors
 
@@ -82,7 +83,8 @@ class SearchTool:
         batch_xs = idxs % (width - q_width + 1)
         batch_ys = torch.div(idxs, width - q_width + 1, rounding_mode='floor')
 
-        return batch_sims.cpu(), batch_xs.cpu(), batch_ys.cpu()
+        # new change: keep the output data on the GPU for speed improvements
+        return batch_sims, batch_xs, batch_ys
 
 class LiveSearchTool(SearchTool):
     def __init__(self, model, device, dataset: Dataset, batch_size=64):
