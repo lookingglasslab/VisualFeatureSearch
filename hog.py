@@ -11,7 +11,7 @@ def hog_model(img: torch.TensorType):
                      feature_vector=False, 
                      cells_per_block=(3,3), 
                      pixels_per_cell=(8,8), 
-                     channel_axis=0)
+                     multichannel=True)
     features = features.reshape((26, 26, -1)) # assuming input image is 224x224
     features = features.transpose((2, 0, 1))
     return torch.from_numpy(features)
