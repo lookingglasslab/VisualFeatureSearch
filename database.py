@@ -27,7 +27,7 @@ class SearchSpaceDataset(Dataset):
     def __init__(self, path, transform=net_transform, return_idxs=True):
         self._path = path
         self._all_images = sorted(os.listdir(path))
-        self.transform = net_transform
+        self.transform = transform 
         self.return_idxs = return_idxs
     
     def __len__(self):

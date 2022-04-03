@@ -16,13 +16,13 @@ def get_crop_rect(query_mask: np.ndarray, threshold=0) -> tuple[int]:
 
 class SearchTool:
     def __init__(self, model, device):
-        self._model = model.to(device)
+        self._model = model
         self._device = device
 
     def set_input_image(self, query_image: torch.Tensor):
         '''Assumes `query_image` is already preprocessed'''
         query_image = query_image.to(self._device)
-        self._query_features = self._model(query_image[None, :, :, :])
+        self._query_features = self._model(query_image[None, :, :, :]).to(self._device)
 
     def compute(self, query_mask):
         raise NotImplementedError('Do not use the SearchTool base class')
@@ -82,7 +82,7 @@ class SearchTool:
         batch_xs = idxs % (width - q_width + 1)
         batch_ys = torch.div(idxs, width - q_width + 1, rounding_mode='floor')
 
-        return batch_sims.cpu(), batch_xs.cpu(), batch_ys.cpu()
+        return batch_sims, batch_xs, batch_ys
 
 class LiveSearchTool(SearchTool):
     def __init__(self, model, device, dataset: Dataset, batch_size=64):
