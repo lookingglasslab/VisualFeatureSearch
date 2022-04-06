@@ -41,7 +41,8 @@ def precompute(dataloader: DataLoader, model, cache_path, array_name):
             batch = batch.to(gpu)
             features = model(batch)
             features = features.cpu().numpy()
-            out_feats[idx:idx+dataloader.batch_size] = features
-            idx += dataloader.batch_size
+            length = min(dataloader.batch_size, len(out_feats) - idx)
+            out_feats[idx:idx+length] = features[:length]
+            idx += length
             print('Progress:', idx, '/', len(dataloader.dataset))
             del batch, features
