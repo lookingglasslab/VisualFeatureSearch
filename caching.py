@@ -17,21 +17,22 @@ def precompute(dataloader: DataLoader, model, cache_path, array_name):
         raise Exception('No GPU Available')
 
     gpu = torch.device('cuda:0')
-    model = model.to(gpu)
+    # model = model.to(gpu)
 
     # get output dimensions
     img0 = dataloader.dataset[0]
     img0 = img0.to(gpu)
-    output0 = model(img0)
-    feature_shape = output0.shape
-    feature_shape[0] = len(dataloader.dataset)
+    output0 = model(img0[None, :, :, :])
+    tmpfs = output0.shape
+    feature_shape = (len(dataloader.dataset), tmpfs[1], tmpfs[2], tmpfs[3])
 
     # create caching store
     store = zarr.DirectoryStore(cache_path)
-    root = zarr.group(store=store, overwrite=True)
+    root = zarr.group(store=store, overwrite=False)
     out_feats = root.zeros(array_name,
             shape=feature_shape,
-            chunks=(500, None, None, None))
+            chunks=(500, None, None, None),
+            overwrite=True)
 
     with torch.no_grad():
         it = iter(dataloader)
@@ -43,3 +44,4 @@ def precompute(dataloader: DataLoader, model, cache_path, array_name):
             out_feats[idx:idx+dataloader.batch_size] = features
             idx += dataloader.batch_size
             print('Progress:', idx, '/', len(dataloader.dataset))
+            del batch, features
