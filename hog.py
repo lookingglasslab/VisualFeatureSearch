@@ -4,15 +4,16 @@ from skimage.feature import hog as skhog
 import torch
 import zarr
 
-def hog_model(img: torch.TensorType):
-    input = img[0].cpu().numpy()
-    features = skhog(input,
+# note: takes raw image input, not a tensor!
+def hog_model(img):
+    features = skhog(img,
                      visualize=False, 
                      feature_vector=False, 
                      cells_per_block=(3,3), 
                      pixels_per_cell=(8,8), 
-                     channel_axis=0)
-    features = features.reshape((9*3*3, 26, 26)) # assuming input image is 224x224
+                     multichannel=True)
+    features = features.reshape((26, 26, -1)) # assuming input image is 224x224
+    features = features.transpose((2, 0, 1))
     return torch.from_numpy(features)
 
 class HOGSearchTool(CachedSearchTool):
