@@ -32,6 +32,7 @@ class SearchTool:
         cropped_mask = query_mask[top:bot, left:right]
         cropped_query_features = self._query_features[..., top:bot, left:right]
 
+        # TODO: doing this once per batch is a bottleneck -- switch to doing it once
         mask_tensor = torch.tensor(cropped_mask).to(self._device)
         mask_tensor = mask_tensor[None, None, :, :] # reshape to match feature tensors
 

@@ -11,56 +11,38 @@ from torchvision import models, transforms
 
 import database
 import zarr
-
-BATCH_SIZE = 256
-
-class FeatureType(Enum):
-    '''Enum of all features we work with in this project. 
-    Can be used to describe a SavedFeature instance, 
-    as well as a general utility.'''
-    HOG = 1
-    CNN = 2
-
-def precompute(dataset_path, cache_path):
+ 
+def precompute(dataloader: DataLoader, model, cache_path, array_name):
     if not torch.cuda.is_available():
         raise Exception('No GPU Available')
 
     gpu = torch.device('cuda:0')
+    # model = model.to(gpu)
 
-    feature_model = models.vgg16(pretrained=True)
-    feature_model = feature_model.features
-    feature_model = feature_model.to(gpu)
+    # get output dimensions
+    img0 = dataloader.dataset[0][0]
+    img0 = img0.to(gpu)
+    output0 = model(img0[None, :, :, :])
+    tmpfs = output0.shape
+    feature_shape = (len(dataloader.dataset), tmpfs[1], tmpfs[2], tmpfs[3])
 
-    search_db = database.SearchSpaceDataset(dataset_path)
-    dl = DataLoader(search_db, batch_size=BATCH_SIZE)
-
-    store = zarr.DirectoryStore(cache_path)
-    root = zarr.group(store=store, overwrite=True)
-    out_feats = root.zeros(FeatureType.CNN,
-            shape=(len(search_db), 512, 7, 7),
-            chunks=(500, None, None, None))
-
-    with torch.no_grad():
-        it = iter(dl)
-        for batch, idxs in it:
-            batch = batch.to(gpu)
-            features = feature_model(batch)
-            features = features.cpu().numpy()
-            idxs = idxs.numpy()
-            out_feats[idxs[0]:idxs[0]+BATCH_SIZE] = features
-            print('Progress:', idxs[0], '/', len(search_db))
-
-def load_data(cache_path):
+    # create caching store
     store = zarr.DirectoryStore(cache_path)
     root = zarr.group(store=store, overwrite=False)
-    return root[FeatureType.CNN]
+    out_feats = root.zeros(array_name,
+            shape=feature_shape,
+            chunks=(500, None, None, None),
+            overwrite=True)
 
-def get_args():
-    parser = argparse.ArgumentParser(description='Precompute the features for a given dataset')
-    parser.add_argument('dataset_path', type=str, help='Path to input image dataset')
-    parser.add_argument('cache_path', type=str, help='Path to store the resulting ZARR datastore')
-    return parser.parse_args()
-
-if __name__ == '__main__':
-    args = get_args()
-    precompute(args.dataset_path, args.cache_path)
+    with torch.no_grad():
+        it = iter(dataloader)
+        idx = 0
+        for batch in it:
+            batch = batch[0].to(gpu)
+            features = model(batch)
+            features = features.cpu().numpy()
+            length = min(dataloader.batch_size, len(out_feats) - idx)
+            out_feats[idx:idx+length] = features[:length]
+            idx += length
+            print('Progress:', idx, '/', len(dataloader.dataset))
+            del batch, features
