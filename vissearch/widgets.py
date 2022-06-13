@@ -1,5 +1,6 @@
 import random
 
+# common JS code for executing callbacks into Python
 CALLBACK_JS = '''
 <script>
     function isCallbackSupported() {
@@ -243,6 +244,7 @@ MULTI_HIGHLIGHT_HTML = '''
 '''
 
 class HighlightWidget:
+    ''' A Jupyter notebook widget for interactively selecting a specific region within an image.'''
     def __init__(self, img_url, callback_name=None, size=224, highlight_radius=20):
         self._img_url = img_url
         self._callback_name = callback_name
