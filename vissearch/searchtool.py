@@ -15,6 +15,9 @@ def get_crop_rect(query_mask: np.ndarray, threshold=0) -> tuple[int]:
     return top, left, bot, right
 
 class SearchTool:
+    '''Base class for searching across feature tensors. `compute()` is not implemented here, so
+       it is recommended to use `CachedSearchTool` or `LiveSearchTool` instead.'''
+
     def __init__(self, model, device):
         self._model = model
         self._device = device
@@ -28,11 +31,12 @@ class SearchTool:
         raise NotImplementedError('Do not use the SearchTool base class')
 
     def compute_batch(self, query_mask: np.ndarray, batch_arr: np.ndarray | torch.Tensor) -> tuple[torch.Tensor]:
+        '''Computes cosine similarities for a single batch.'''
         top, left, bot, right = get_crop_rect(query_mask)
         cropped_mask = query_mask[top:bot, left:right]
         cropped_query_features = self._query_features[..., top:bot, left:right]
 
-        # TODO: doing this once per batch is a bottleneck -- switch to doing it once
+        # TODO: doing this once per batch is a potential bottleneck -- switch to doing it once
         mask_tensor = torch.tensor(cropped_mask).to(self._device)
         mask_tensor = mask_tensor[None, None, :, :] # reshape to match feature tensors
 
@@ -60,7 +64,7 @@ class SearchTool:
         # goal is to find cos(theta) = A . B / (||A|| * ||B||)
         # - first do convolution between batch_vecs (tensor) and norm_query_features*mask_tensor (kernel)
         # - batch_vecs is not normalized, so we need to find vector mag. for each window we used
-        #   - this can (maybe?) be done by first doing batch_vecs * batch_vecs (element-wise)
+        #   - this can be done by first doing batch_vecs * batch_vecs (element-wise)
         #   - then, we can do a second convolution between squared vecs and the mask tensor to get squared magnitude
         #   - then just divide convolution outputs element-wise
 
@@ -86,6 +90,9 @@ class SearchTool:
         return batch_sims, batch_xs, batch_ys
 
 class LiveSearchTool(SearchTool):
+    '''Implementation of `SearchTool` that computes features on the fly. 
+       Does not require a precomputed feature cache, but should only be used with
+       small/medium datasets.'''
     def __init__(self, model, device, dataset: Dataset, batch_size=64):
         super().__init__(model, device)
         self._dataset = dataset
@@ -118,6 +125,8 @@ class LiveSearchTool(SearchTool):
 # or: switch between RAM and GPU memory for batches
 
 class CachedSearchTool(SearchTool):
+    '''Implementation of `SearchTool` that uses a precomputed cache to efficiently 
+       compute search results. See `caching.py` for creating a new cache.''' 
     def __init__(self, model, cache: zarr.Array, device, batch_size=500):
         super().__init__(model, device)
         self._cache = cache

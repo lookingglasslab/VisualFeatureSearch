@@ -1,14 +1,10 @@
-import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
-from torchvision.io import read_image
 
 from PIL import Image
-import numpy as np
 
 import os
 
-# some utility transforms for us to prepare our data
 # from https://github.com/pytorch/examples/blob/master/imagenet/main.py#L227
 net_transform = transforms.Compose([
     transforms.Resize(256),
@@ -23,7 +19,9 @@ vis_transform = transforms.Compose([
     transforms.CenterCrop(224)
 ])
 
-class SearchSpaceDataset(Dataset):
+class SimpleDataset(Dataset):
+    ''' A basic PyTorch dataset we use for some small-scale experiments.
+        Works well with VFS, but is not required. '''
     def __init__(self, path, transform=net_transform, return_idxs=True):
         self._path = path
         self._all_images = sorted(os.listdir(path))
@@ -35,13 +33,8 @@ class SearchSpaceDataset(Dataset):
 
     def __getitem__(self, idx):
         img_path = os.path.join(self._path, self._all_images[idx])
-        image = Image.open(img_path)
+        image = Image.open(img_path).convert('RGB')
 
-        # convert grayscale to color, if necessary
-        color_image = Image.new('RGB', image.size)
-        color_image.paste(image)
-        image = color_image
-            
         if self.transform:
             image = self.transform(image)
         if self.return_idxs:
