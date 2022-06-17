@@ -34,16 +34,22 @@ def crop_mask(mask):
   top, left, bot, right = get_crop_rect(mask)
   return mask[top:bot, left:right]
 
-def mask_overlay(image : Image, x : int, y : int, mask_size : int, mask : np.ndarray) -> np.ndarray:
-    '''add a `mask` over a given `image`'''
+def mask_overlay(image: Image, 
+                 x: int, y: int, 
+                 mask_size: int, mask: np.ndarray,
+                 alpha: int = 0.7, beta: int = 0.4) -> np.ndarray:
+    '''add a `mask` over a given `image`.
+    
+       The image result is `image * alpha + mask * beta`'''
+
     img = np.asarray(image, dtype=np.float32)
     img /= 256
-    img *= 0.9 if mask_size > 10 else 0.7 # lower brightness
+    img *= alpha
 
     full_mask = np.zeros((mask_size,mask_size))
     full_mask[y:y+mask.shape[0], x:x+mask.shape[1]] = mask
     full_mask = cv2.resize(full_mask, (224, 224), interpolation=cv2.INTER_NEAREST)
-    full_mask *= 0.3 if mask_size > 10 else 0.5
+    full_mask *= beta
 
     if len(img.shape) == 3:
         img[:, :, 0] += full_mask
