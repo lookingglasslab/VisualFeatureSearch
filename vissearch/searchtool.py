@@ -110,6 +110,7 @@ class LiveSearchTool(SearchTool):
                 del batch
         return all_vecs
     
+    @torch.no_grad()
     def compute(self, query_mask):
         sims = []
         xs = []
@@ -121,9 +122,6 @@ class LiveSearchTool(SearchTool):
             ys.append(batch_ys)
         return torch.cat(sims), torch.cat(xs), torch.cat(ys)
 
-# idea: make a live batched version, where feature vecs are stored in Zarr but computed on the fly
-# or: switch between RAM and GPU memory for batches
-
 class CachedSearchTool(SearchTool):
     '''Implementation of `SearchTool` that uses a precomputed cache to efficiently 
        compute search results. See `caching.py` for creating a new cache.''' 
@@ -132,6 +130,7 @@ class CachedSearchTool(SearchTool):
         self._cache = cache
         self._batch_size = batch_size
 
+    @torch.no_grad()
     def compute(self, query_mask):
         sims = []
         xs = []
