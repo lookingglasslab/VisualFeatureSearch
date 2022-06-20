@@ -12,3 +12,6 @@ Choose region             |   Imagenet nearest neighbors
 Please see the following notebooks for demos of our interactive tool:
 * [Small-scale demo](https://colab.research.google.com/drive/1wG92p-BHrwWBt_03Qw3bO4o0jL9vgyqK?usp=sharing) (no caching; search over 1k ImageNet val images)
 * [Caching demo](https://colab.research.google.com/drive/18xIac1wiNaJh_hcqEKRsNUr9EmToAQRT?usp=sharing) (search over 50k ImageNet val images)
+
+## Acknowledgements
+This visualization arose from discussions with [David Bau](https://baulab.info/) and his initial [prototype](https://github.com/davidbau/gpwidget/blob/master/notebooks/ExploreVggByClick.ipynb) of a similar visualization.
