@@ -1,2 +1,6 @@
 numpy
-torch
+zarr
+git+https://github.com/greentfrapp/lucent
+Pillow
+matplotlib
+opencv-python
