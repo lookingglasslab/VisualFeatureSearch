@@ -17,10 +17,10 @@ Choose region             |   Imagenet nearest neighbors
 
 ## Notebooks
 
-Please see the following notebooks for demos of our interactive tool:
-* [Interactive Article](https://colab.research.google.com/drive/1B7SLFWCPiqFYf4kp-tQaLeL5tzVzQkyY?usp=sharing) (contains most qualitative visualizations from preprint)
-* [Basic Demo](https://colab.research.google.com/drive/1sIio238NDRiGqxy0jto7O6VCFvqtmnYA?usp=sharing) (search over 50k ImageNet validation images)
-* [Out-of-domain Comparison](https://colab.research.google.com/drive/1D7wmXVI9C8Ul_11aGKtQ6UL0hfY38NSr?usp=sharing) (comparing a model's performance on in-domain and out-of-domain queries)
+Please see the following Colab notebooks for demos of our interactive tool:
+* [Interactive Article](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_Interactive_Article.ipynb) (contains most qualitative visualizations from preprint)
+* [Basic Demo](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_Basic_Demo.ipynb) (search over 50k ImageNet validation images)
+* [Out-of-domain Comparison](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_Out_of_Domain.ipynb) (comparing a model's performance on in-domain and out-of-domain queries)
 
 ## Implementation Overview
 
