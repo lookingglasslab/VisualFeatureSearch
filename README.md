@@ -1,4 +1,7 @@
 # Interactive Visual Feature Search
+Devon Ulrich and Ruth Fong
+
+This repo contains the code for our 2022 preprint "[Interactive Visual Feature Search](https://arxiv.org/abs/2211.15060)".
 
 Many visualization techniques have been created to help explain the behavior of convolutional neural networks (CNNs), but they largely consist of static diagrams that convey limited information.
 Interactive visualizations can provide more rich insights and allow users to more easily explore a model's behavior; however, they are typically not easily reusable and are specific to a particular model. 
@@ -7,15 +10,15 @@ We introduce Interactive Visual Feature Search, a novel interactive visualizatio
 Our tool allows a user to highlight an image region and search for images from a given dataset with the most similar CNN features, which can provide new insights into how a model processes the geometric and semantic details in images.
 
 
-
-
 ## Example
 Choose region             |   Imagenet nearest neighbors
 :-------------------------:|:-------------------------:
 <img src="images/spia_highlighting.gif" alt="animation of highlighting widget showing the SPIA building" height="200" /> |     <img src="images/search_spia_results.png" alt="top 2 nearest neighbors to SPIA region" height="200" />
 
 ## Notebooks
+
 Please see the following notebooks for demos of our interactive tool:
+* [Interactive Article](https://colab.research.google.com/drive/1B7SLFWCPiqFYf4kp-tQaLeL5tzVzQkyY?usp=sharing) (contains most qualitative visualizations from preprint)
 * [Basic Demo](https://colab.research.google.com/drive/1sIio238NDRiGqxy0jto7O6VCFvqtmnYA?usp=sharing) (search over 50k ImageNet validation images)
 * [Out-of-domain Comparison](https://colab.research.google.com/drive/1D7wmXVI9C8Ul_11aGKtQ6UL0hfY38NSr?usp=sharing) (comparing a model's performance on in-domain and out-of-domain queries)
 
@@ -44,11 +47,12 @@ To edit the above notebooks or create your own visualizations with Interactive V
 ## Reference
 If you find this visualization useful, please cite it as follows:
 ```
-@online{ulrich2022search,
+@article{ulrich2022search,
   author = {Devon Ulrich and Ruth Fong},
   title = {Interactive Visual Feature Search},
-  year = 2022,
-  url = https://github.com/lookingglasslab/VisualFeatureSearch,
+  journal = {CoRR},
+  volume = {abs/2211.15060},
+  year={2022}
 }
 ```
 
