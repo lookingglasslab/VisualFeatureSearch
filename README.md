@@ -20,6 +20,7 @@ Choose region             |   Imagenet nearest neighbors
 Please see the following Colab notebooks for demos of our interactive tool:
 * [Interactive Article](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_Interactive_Article.ipynb) (contains most qualitative visualizations from preprint)
 * [Basic Demo](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_Basic_Demo.ipynb) (search over 50k ImageNet validation images)
+* [No-caching Demo](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_No_Cache_Demo.ipynb) (search over 1k ImageNet validation images; no need to download cache)
 * [Out-of-domain Comparison](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_Out_of_Domain.ipynb) (comparing a model's performance on in-domain and out-of-domain queries)
 
 ## Implementation Overview
