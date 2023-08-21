@@ -3,6 +3,7 @@ from io import BytesIO
 import base64
 from typing import Callable
 
+import torch
 import numpy as np
 import cv2
 from vissearch.searchtool import get_crop_rect
@@ -59,3 +60,23 @@ def mask_overlay(image: Image,
         img += full_mask
 
     return np.minimum(img, 1)
+
+class FeatureHook(torch.nn.Module):
+    ''' Module to extract internal feature data from a model. 
+        
+        Inputs: `model` is the model itself (e.g. `models.resnet50()`), while `layer` 
+        is the layer within to extract features from (e.g. `model.layer4[2].conv2`).
+         
+        `feature_hook.forward(x)` returns the output of the given `layer` when `x` is inputted into the model.'''
+        
+    def __init__(self, model, layer):
+        super().__init__()
+        self.model = model
+        layer.register_forward_hook(self._hook_fn)
+
+    def _hook_fn(self, layer, input, output):
+        self.latest_output = output
+
+    def forward(self, x):
+        self.model(x)
+        return self.latest_output
