@@ -68,11 +68,11 @@ class SearchTool:
         #   - then, we can do a second convolution between squared vecs and the mask tensor to get squared magnitude
         #   - then just divide convolution outputs element-wise
 
-        scaledSims = torch.conv2d(batch_vecs.double(), norm_query_features * mask_tensor)
+        scaledSims = torch.conv2d(batch_vecs, norm_query_features * mask_tensor)
 
         sq_batch_vecs = batch_vecs * batch_vecs
         sq_mask_tensor = mask_tensor * mask_tensor
-        batch_mags = torch.conv2d(sq_batch_vecs.double().view(-1, 1, height, width), sq_mask_tensor)
+        batch_mags = torch.conv2d(sq_batch_vecs.view(-1, 1, height, width), sq_mask_tensor)
         batch_mags = batch_mags.view(batch_vecs.shape[0], 
                                      batch_vecs.shape[1],
                                      height - q_height + 1,
@@ -136,7 +136,7 @@ class CachedSearchTool(SearchTool):
         xs = []
         ys = []
         for i in range(0, len(self._cache), self._batch_size):
-            batch_arr = self._cache[i:i + self._batch_size]
+            batch_arr = np.float32(self._cache[i:i + self._batch_size])
             batch_sims, batch_xs, batch_ys = self.compute_batch(query_mask, batch_arr)
             sims.append(batch_sims)
             xs.append(batch_xs)

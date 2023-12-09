@@ -19,11 +19,11 @@ CALLBACK_JS = '''
 '''
 
 HIGHLIGHT_HTML = '''
-<div class="container" style="width: {sz}px; height: {sz}px;">
-    <div class="image" style="background-image: url('{url}'); width: {sz}px; height: {sz}px;"></div>
+<div class="vfs-container" style="width: {sz}px; height: {sz}px;">
+    <div class="vfs-image" style="background-image: url('{url}'); width: {sz}px; height: {sz}px;"></div>
     <canvas 
         id="drawCanvas_{N}"
-        class="overlay" 
+        class="vfs-overlay" 
         style="z-index: 10; width: {sz}px; height: {sz}px;"
     ></canvas>
 </div>
@@ -32,23 +32,23 @@ HIGHLIGHT_HTML = '''
 <button id="resetBtn_{N}">Reset</button>
 
 <style>
-    .container {{
+    .vfs-container {{
         position: relative;
         display: inline-block;
     }}
 
-    .image, .overlay {{
+    .vfs-image, .vfs-overlay {{
         position: absolute;
         left: 0px;
         top: 0px;
     }}
 
-    .overlay {{
+    .vfs-overlay {{
         opacity: 0.5;
         transition: opacity .1s ease-in-out;
     }}
 
-    .overlay:hover {{
+    .vfs-overlay:hover {{
         opacity: 0.7;
     }}
 </style>
@@ -103,44 +103,44 @@ HIGHLIGHT_HTML = '''
 
 MULTI_HIGHLIGHT_HTML = '''
 <div style="height: {sz}px; margin-bottom: 5px;">
-    <div class="container" style="width: {sz}px; height: {sz}px; float: left">
-        <div class="image" id="currImgDiv_{N}" style="width: {sz}px; height: {sz}px;"></div>
+    <div class="vfs-container" style="width: {sz}px; height: {sz}px; float: left">
+        <div class="vfs-image" id="currImgDiv_{N}" style="width: {sz}px; height: {sz}px;"></div>
 
         <canvas 
             id="drawCanvas_{N}"
-            class="overlay" 
+            class="vfs-overlay" 
             style="z-index: 10; width: {sz}px; height: {sz}px;"
         ></canvas>
     </div>
 
-    <div class="photos" id="photosDiv_{N}" style="height: {sz}px; float: left;">
+    <div class="vfs-photos" id="photosDiv_{N}" style="height: {sz}px; float: left;">
     </div>
 </div>
 
 <button id="resetBtn_{N}">Reset</button>
 
 <style>
-    .container {{
+    .vfs-container {{
         position: relative;
         display: inline-block;
     }}
 
-    .image, .overlay {{
+    .vfs-image, .vfs-overlay {{
         position: absolute;
         left: 0px;
         top: 0px;
     }}
 
-    .overlay {{
+    .vfs-overlay {{
         opacity: 0.5;
         transition: opacity .1s ease-in-out;
     }}
 
-    .overlay:hover {{
+    .vfs-overlay:hover {{
         opacity: 0.7;
     }}
 
-    .photos {{
+    .vfs-photos {{
         display: flex;
         flex-direction: column;
         align-items: flex-start;
@@ -153,7 +153,7 @@ MULTI_HIGHLIGHT_HTML = '''
         padding-left: 10px;
     }}
 
-    .photoBtn {{
+    .vfs-photoBtn {{
         width: 40px;
         height: 40px;
         margin-top: 0px !important;
@@ -163,7 +163,7 @@ MULTI_HIGHLIGHT_HTML = '''
         transition: opacity .05s ease-in-out;
     }}
 
-    .photoBtn:hover {{
+    .vfs-photoBtn:hover {{
         opacity: 0.7;
     }}
 </style>
@@ -224,7 +224,7 @@ MULTI_HIGHLIGHT_HTML = '''
 
     for(let i = 0; i < urls.length; i++) {{
         let elem = document.createElement('img');
-        elem.classList.add("photoBtn");
+        elem.classList.add("vfs-photoBtn");
         elem.id = "photoBtn{N}_" + i;
         elem.src = urls[i];
         elem.onclick = photoChange;
