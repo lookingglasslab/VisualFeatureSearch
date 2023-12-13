@@ -7,7 +7,7 @@ packages = ["visualfeaturesearch"]
 
 [project]
 name = "visualfeaturesearch"
-version = "0.0.7"
+version = "0.0.9"
 dependencies = [
   "numpy",
   "Pillow",
@@ -17,8 +17,12 @@ dependencies = [
   "zarr",
 ]
 requires-python = ">= 3.8"
+authors = [
+  {name = "Devon Ulrich"},
+  {name = "Ruth Fong"},
+]
 maintainers = [
-  {name="Devon Ulrich", email="dulrich000@gmail.com"},
+  {name = "Devon Ulrich", email = "dulrich000@gmail.com"},
 ]
 description = "A lightweight, interactive tool for interpreting any CNN"
 readme = "README.md"
