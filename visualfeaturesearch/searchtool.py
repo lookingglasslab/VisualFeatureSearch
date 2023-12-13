@@ -125,7 +125,7 @@ class LiveSearchTool(SearchTool):
 class CachedSearchTool(SearchTool):
     '''Implementation of `SearchTool` that uses a precomputed cache to efficiently 
        compute search results. See `caching.py` for creating a new cache.''' 
-    def __init__(self, model, cache: zarr.Array, device, batch_size=500):
+    def __init__(self, model, cache: zarr.Array | torch.Tensor | np.ndarray, device, batch_size=500):
         super().__init__(model, device)
         self._cache = cache
         self._batch_size = batch_size
@@ -136,7 +136,7 @@ class CachedSearchTool(SearchTool):
         xs = []
         ys = []
         for i in range(0, len(self._cache), self._batch_size):
-            batch_arr = np.float32(self._cache[i:i + self._batch_size])
+            batch_arr = self._cache[i:i + self._batch_size]
             batch_sims, batch_xs, batch_ys = self.compute_batch(query_mask, batch_arr)
             sims.append(batch_sims)
             xs.append(batch_xs)
