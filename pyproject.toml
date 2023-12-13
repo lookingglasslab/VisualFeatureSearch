@@ -7,7 +7,7 @@ packages = ["visualfeaturesearch"]
 
 [project]
 name = "visualfeaturesearch"
-version = "0.0.9"
+version = "0.0.10"
 dependencies = [
   "numpy",
   "Pillow",
