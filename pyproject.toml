@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "visualfeaturesearch"
+version = "0.0.1"
+dependencies = [
+  "numpy",
+  "Pillow",
+  "opencv-python",
+  "torch",
+  "torchvision",
+]
+authors = [
+  { name="Devon Ulrich", email="dulrich000@gmail.com"},
+  { name="Ruth Fong"},
+]
+description = "A lightweight, interactive tool for interpreting any CNN"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/lookingglasslab/VisualFeatureSearch"
