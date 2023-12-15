@@ -1,4 +1,6 @@
 .DS_Store
+.ipynb_checkpoints
 dist
+local-notebooks
 node_modules
 __pycache__
