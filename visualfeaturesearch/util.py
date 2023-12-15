@@ -6,7 +6,7 @@ from typing import Callable
 import torch
 import numpy as np
 import cv2
-from vissearch.searchtool import get_crop_rect
+from .searchtool import get_crop_rect
 
 def image_to_durl(img : Image):
     ''' Converts a PIL Image to a data URL '''

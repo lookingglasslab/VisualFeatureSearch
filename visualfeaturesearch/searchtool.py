@@ -24,7 +24,7 @@ class SearchTool:
 
     def set_input_image(self, query_image: torch.Tensor):
         '''Assumes `query_image` is already preprocessed'''
-        query_image = query_image.to(self._device)
+        query_image = query_image.to(device=self._device, dtype=torch.float32)
         self._query_features = self._model(query_image[None, :, :, :]).to(self._device)
 
     def compute(self, query_mask):
@@ -37,7 +37,7 @@ class SearchTool:
         cropped_query_features = self._query_features[..., top:bot, left:right]
 
         # TODO: doing this once per batch is a potential bottleneck -- switch to doing it once
-        mask_tensor = torch.tensor(cropped_mask).to(self._device)
+        mask_tensor = torch.tensor(cropped_mask, dtype=torch.float32).to(self._device)
         mask_tensor = mask_tensor[None, None, :, :] # reshape to match feature tensors
 
         region_query_features = cropped_query_features * mask_tensor
@@ -55,7 +55,7 @@ class SearchTool:
         else:
             batch_vecs = batch_arr
         
-        batch_vecs = batch_vecs.to(self._device)
+        batch_vecs = batch_vecs.to(device=self._device, dtype=torch.float32)
         batch_sims = torch.zeros(len(batch_vecs)).to(self._device)
         batch_xs = torch.zeros(len(batch_vecs)).to(self._device)
         batch_ys = torch.zeros(len(batch_vecs)).to(self._device)
@@ -68,11 +68,11 @@ class SearchTool:
         #   - then, we can do a second convolution between squared vecs and the mask tensor to get squared magnitude
         #   - then just divide convolution outputs element-wise
 
-        scaledSims = torch.conv2d(batch_vecs.double(), norm_query_features * mask_tensor)
+        scaledSims = torch.conv2d(batch_vecs, norm_query_features * mask_tensor)
 
         sq_batch_vecs = batch_vecs * batch_vecs
         sq_mask_tensor = mask_tensor * mask_tensor
-        batch_mags = torch.conv2d(sq_batch_vecs.double().view(-1, 1, height, width), sq_mask_tensor)
+        batch_mags = torch.conv2d(sq_batch_vecs.view(-1, 1, height, width), sq_mask_tensor)
         batch_mags = batch_mags.view(batch_vecs.shape[0], 
                                      batch_vecs.shape[1],
                                      height - q_height + 1,
@@ -125,7 +125,7 @@ class LiveSearchTool(SearchTool):
 class CachedSearchTool(SearchTool):
     '''Implementation of `SearchTool` that uses a precomputed cache to efficiently 
        compute search results. See `caching.py` for creating a new cache.''' 
-    def __init__(self, model, cache: zarr.Array, device, batch_size=500):
+    def __init__(self, model, cache: zarr.Array | torch.Tensor | np.ndarray, device, batch_size=500):
         super().__init__(model, device)
         self._cache = cache
         self._batch_size = batch_size
