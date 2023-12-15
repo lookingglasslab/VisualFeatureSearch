@@ -1,7 +1,7 @@
 # Interactive Visual Feature Search
 Devon Ulrich and Ruth Fong
 
-This repo contains the code for our 2022 preprint "[Interactive Visual Feature Search](https://arxiv.org/abs/2211.15060)".
+This repo contains the code for our 2023 paper "[Interactive Visual Feature Search](https://openreview.net/pdf?id=JqfN8vp1ov)".
 
 Many visualization techniques have been created to help explain the behavior of convolutional neural networks (CNNs), but they largely consist of static diagrams that convey limited information.
 Interactive visualizations can provide more rich insights and allow users to more easily explore a model's behavior; however, they are typically not easily reusable and are specific to a particular model. 
@@ -18,10 +18,20 @@ Choose region             |   Imagenet nearest neighbors
 ## Notebooks
 
 Please see the following Colab notebooks for demos of our interactive tool:
-* [Interactive Article](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_Interactive_Article.ipynb) (contains most qualitative visualizations from preprint)
-* [Basic Demo](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_Basic_Demo.ipynb) (search over 50k ImageNet validation images)
+* [Basic Demo](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_Basic_Demo.ipynb) (search over 40k CoCo validation images)
+  * [Caching script](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_Caching_COCO.ipynb) for precomputing the feature cache used in the Basic Demo
 * [No-caching Demo](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_No_Cache_Demo.ipynb) (search over 1k ImageNet validation images; no need to download cache)
 * [Out-of-domain Comparison](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_Out_of_Domain.ipynb) (comparing a model's performance on in-domain and out-of-domain queries)
+* [Out-of-domain Generalization with WILDS](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_WILDS_Demo.ipynb) (another out-of-domain experiment with the iWildCam dataset in WILDS)
+* [Chest X-ray Localization](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/Interactive_Visual_Feature_Search_Chest_Xray_Demo.ipynb) (finding regions that correlate with classification labels in X-ray images)
+* [2022 Interactive Article](https://colab.research.google.com/github/lookingglasslab/VisualFeatureSearch/blob/main/notebooks/(2022)%20Interactive_Visual_Feature_Search_Interactive_Article.ipynb) (contains most qualitative visualizations from our [2022 preprint](https://arxiv.org/abs/2211.15060))
+
+## Installing
+Our tool is available as a PIP package. The following command will install it in your current environment:
+```
+pip install visualfeaturesearch
+```
+Please see the details below and the demo notebooks for more details on how to use the library.
 
 ## Implementation Overview
 
@@ -41,19 +51,20 @@ This library is designed to make it simple to use Interactive Visual Feature Sea
 
 To edit the above notebooks or create your own visualizations with Interactive Visual Feature Search, the following modules are necessary:
 
-* [widgets.py](https://github.com/lookingglasslab/VisualFeatureSearch/blob/main/vissearch/widgets.py): the HighlightWidget and MultiHighlightWidget classes create interactive widgets that can be used in Jupyter/Colab notebooks to select an image and highlight a region within it with the mouse. 
-* [searchtool.py](https://github.com/lookingglasslab/VisualFeatureSearch/blob/main/vissearch/searchtool.py): the CachedSearchTool computes the cosine similarities between the query image and the searchable dataset in a region-based manner as described above. 
-* [caching.py](https://github.com/lookingglasslab/VisualFeatureSearch/blob/main/vissearch/caching.py): the above notebook demos use precomputed feature data to speed up the runtime of Interactive Visual Feature Search. To create your own feature caches for custom experiments, `precompute()` can be used to save a [Zarr](https://zarr.readthedocs.io/en/stable/) archive that can be used by CachedSearchTool. 
+* [widgets.py](https://github.com/lookingglasslab/VisualFeatureSearch/blob/main/visualfeaturesearch/widgets.py): the HighlightWidget and MultiHighlightWidget classes create interactive widgets that can be used in Jupyter/Colab notebooks to select an image and highlight a region within it with the mouse. 
+* [searchtool.py](https://github.com/lookingglasslab/VisualFeatureSearch/blob/main/visualfeaturesearch/searchtool.py): the CachedSearchTool computes the cosine similarities between the query image and the searchable dataset in a region-based manner as described above. 
+* [caching.py](https://github.com/lookingglasslab/VisualFeatureSearch/blob/main/visualfeaturesearch/caching.py): the above notebook demos use precomputed feature data to speed up the runtime of Interactive Visual Feature Search. To create your own feature caches for custom experiments, `precompute()` can be used to save a [Zarr](https://zarr.readthedocs.io/en/stable/) archive that can be used by CachedSearchTool. 
 
 ## Reference
 If you find this visualization useful, please cite it as follows:
 ```
-@article{ulrich2022search,
-  author = {Devon Ulrich and Ruth Fong},
-  title = {Interactive Visual Feature Search},
-  journal = {CoRR},
-  volume = {abs/2211.15060},
-  year={2022}
+@inproceedings{
+ulrich2023interactive,
+title={Interactive Visual Feature Search},
+author={Devon Ulrich and Ruth Fong},
+booktitle={XAI in Action: Past, Present, and Future Applications},
+year={2023},
+url={https://openreview.net/forum?id=JqfN8vp1ov}
 }
 ```
 
